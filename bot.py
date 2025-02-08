@@ -2,7 +2,7 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Command
-from api import TOKEN #из файла api добавляем token
+from api import TOKEN #из файла api добавляем tokenv
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()

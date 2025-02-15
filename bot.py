@@ -15,6 +15,10 @@ async def send_welcome(message: Message):
 async def send_welcome(message: Message):
     await message.answer("Я ничего пока не умею, только команды /start а так же /help")
 
+@dp.message(Command("qwe"))
+async def send_welcome(message: Message):
+    await message.answer("rty")
+
 async def main():
     print("Бот запущен")
     await bot.delete_webhook(drop_pending_updates=True)

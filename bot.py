@@ -3,26 +3,29 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
 from aiogram.enums import ParseMode
-from api import TOKEN #из файла api добавляем token
+from api import TOKEN  # из файла api добавляем token
 from aiogram.client.default import DefaultBotProperties
 
-#Cоздаем объект бот и дисспечер
-
+# Создаем объект бот и диспетчер
 bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 
-main_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-main_keyboard.add (KeyboardButton("Привет"), KeyboardButton("Помощь"))
+# Основная клавиатура
+main_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton("Привет"), KeyboardButton("Помощь")]
+    ], resize_keyboard=True
+)
 
-#инлайн клавиатуры
+# Инлайн клавиатура
 inline_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="Перейти на сайт", url="https://example.com")]
-        [InlineKeyboardButton(text="Нажми", callback_data="button_click")]  
+        [InlineKeyboardButton(text="Перейти на сайт", url="https://example.com")],
+        [InlineKeyboardButton(text="Нажми", callback_data="button_click")]
     ]
 )
 
-#Проврека работает ли это вообще
+# Проверка, работает ли команда /qwe
 @dp.message(Command("qwe"))
 async def send_welcome(message: Message):
     await message.answer("rty")

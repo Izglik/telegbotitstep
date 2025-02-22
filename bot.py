@@ -1,54 +1,66 @@
 import asyncio
+import random
 from aiogram import Bot, Dispatcher, types
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+)
 from aiogram.filters import Command
-from aiogram.enums import ParseMode
-from api import TOKEN  # из файла api добавляем token
 from aiogram.client.default import DefaultBotProperties
+from api import TOKEN
 
-# Создаем объект бот и диспетчер
-bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+# Создаем объект - бот и диспетчер
+bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
 # Основная клавиатура
 main_keyboard = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton("Привет"), KeyboardButton("Помощь")]
-    ], resize_keyboard=True
+        [KeyboardButton(text="Привет!"), KeyboardButton(text="Помощь")]
+    ],
+    resize_keyboard=True
 )
 
 # Инлайн клавиатура
 inline_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="Перейти на сайт", url="https://example.com")],
-        [InlineKeyboardButton(text="Нажми", callback_data="button_click")]
+        [InlineKeyboardButton(text="Начать", callback_data="start")],
+        [InlineKeyboardButton(text="Помощь", callback_data="help")],
+        [InlineKeyboardButton(text="Рандомное число", callback_data="random")]
     ]
 )
 
-# Проверка, работает ли команда /qwe
-@dp.message(Command("qwe"))
-async def send_welcome(message: Message):
-    await message.answer("rty")
-
-
-@dp.message(lambda message: message.text == "Привет!")
-async def hello(message: type.Message):
-    await message.answer("Привет!!! Как дела?", reply_markup=inline_keyboard)
-
+@dp.callback_query()
+async def callback_handler(callback: types.CallbackQuery):
+    if callback.data == "start":
+        await callback.message.answer("Нажмите /start, что бы начать работу с ботом")
+    elif callback.data == "help":
+        await callback.message.answer("Альтернативная помощь или нажми /help")
+    elif callback.data == "random":
+        await callback.message.answer("Хочешь рандомное число? Напиши /random")
 
 @dp.message(Command("start"))
-async def send_welcome(message: Message):
-    await message.answer("Привет! Я твой <b>Telegram-бот</b> 🤖")
+async def start(message: types.Message):
+    await message.answer("Привет! Я тестовый бот <b>test</b>", reply_markup=main_keyboard)
 
+@dp.message(lambda message: message.text == "Привет!")
+async def hello(message: types.Message):
+    await message.answer("Привет!!! Как дела?", reply_markup=inline_keyboard)
+
+@dp.message(Command("random"))
+async def random_command(message: types.Message):
+    number = random.randint(1, 100)
+    await message.answer(f"Случайное число: {number}")
 
 @dp.message(Command("help"))
-async def send_welcome(message: Message):
-    await message.answer("Я ничего пока не умею, только команды /start а так же /help")
-
+async def help_command(message: types.Message):
+    command_text = (
+        "Доступные команды\n"
+        "/start - начать работу с ботом\n"
+        "/help - Показывает список комманд\n"
+        "/random - Генерирует рандомное число"
+    )
 
 async def main():
-    print("Бот запущен")
-    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":

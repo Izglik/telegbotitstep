@@ -119,9 +119,55 @@ async def random_button(message: types.Message):
 async def weather_button(message: types.Message):
     await weather_command(message)
 
+# 📌 Клавиатуры для выбора города
+cities = get_available_cities() # А зачем нам еще раз добовлять это? Где то сверху это уже есть
+
+country_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="🇰🇿 Казахстан"), KeyboardButton(text="🇷🇺 Россия")]
+    ],
+    resize_keyboard=True
+)
+
+kazakhstan_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text=city) for city in cities["Казахстан"]],
+        [KeyboardButton(text="⬅ Назад")]
+    ],
+    resize_keyboard=True
+)
+
+russia_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text=city) for city in cities["Россия"]],
+        [KeyboardButton(text="⬅ Назад")]
+    ],
+    resize_keyboard=True
+)
+
+# 📌 Обработчик выбора страны
+@dp.message(lambda message: message.text in ["🇰🇿 Казахстан", "🇷🇺 Россия"])
+async def select_country(message: types.Message):
+    if message.text == "🇰🇿 Казахстан":
+        await message.answer("🏙 Выберите город в Казахстане:", reply_markup=kazakhstan_keyboard)
+    elif message.text == "🇷🇺 Россия":
+        await message.answer("🏙 Выберите город в России:", reply_markup=russia_keyboard)
+
+# 📌 Обработчик выбора города
+@dp.message(lambda message: message.text in sum(cities.values(), []))
+async def select_city(message: types.Message):
+    city = message.text
+    weather_info = await get_weather(city)
+    await message.answer(weather_info, reply_markup=country_keyboard)
+
+# 📌 Обработчик кнопки "⬅ Назад"
+@dp.message(lambda message: message.text == "⬅ Назад")
+async def go_back(message: types.Message):
+    await message.answer("🔙 Выберите страну:", reply_markup=country_keyboard)
 
 
-# Запускает бота
+
+# Запускает бота(Наверное)
 async def main():
     await dp.start_polling(bot)
 

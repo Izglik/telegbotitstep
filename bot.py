@@ -6,8 +6,8 @@ from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMa
 from aiogram.filters import Command
 from aiogram.client.default import DefaultBotProperties
 from api import TOKEN
-from weather import get_weather
-from films import Movies
+from weather import get_weather, get_available_cities
+from FilmsBooks import Movies, Books
 
 # Создаем объект - бот и диспетчер
 bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
@@ -27,7 +27,9 @@ inline_keyboard = InlineKeyboardMarkup(
         [InlineKeyboardButton(text="Начать", callback_data="start")],
         [InlineKeyboardButton(text="Помощь", callback_data="help")],
         [InlineKeyboardButton(text="Рандомное число", callback_data="random")],
-        [InlineKeyboardButton(text="Погода сегодня", callback_data="weather")]
+        [InlineKeyboardButton(text="Погода сегодня", callback_data="weather")],
+        [InlineKeyboardButton(text="Фильм", callback_data="film")],
+        [InlineKeyboardButton(text="Книга", callback_data="book")]
     ]
 )
 
@@ -42,6 +44,18 @@ async def callback_handler(callback: types.CallbackQuery):
         await random_command(callback.message)  # Вызываем /random
     elif callback.data == "weather":
         await weather_command(callback.message)  # Вызываем /weather
+    elif callback.data == "film":
+       await film_command(callback.message)
+    elif callback.data == "book":
+       await book_command(callback.message)
+    
+
+cities = get_available_cities()
+@dp.message(lambda message: message.text in sum(cities.values(), []))
+async def send_weather(message: types.Message):
+    city = message.text
+    weather_info = await get_weather(city)
+    await message.answer(weather_info)
 
 # Приветствует нас
 @dp.message(Command("start"))
@@ -49,7 +63,7 @@ async def start(message: types.Message):
     await message.answer("Привет! Я тестовый бот <b>test</b>", reply_markup=main_keyboard)
 
 # Просто здорвается и показывает кнопки
-@dp.message(lambda message: message.text == "Привет!")
+@dp.message(lambda message: message.text == "Кнопки")
 async def hello(message: types.Message):
     await message.answer("Привет!!! Как дела?", reply_markup=inline_keyboard)
 
@@ -61,8 +75,13 @@ async def random_command(message: types.Message):
 
 @dp.message(Command("film"))
 async def film_command(message: types.Message):
-    i = random.randint(1, 100)
-    await message.answer(f"Случайный фильм: {Movies[i]}")
+    f = random.randint(1, 100)
+    await message.answer(f"Случайный фильм: {Movies[f]}")
+
+@dp.message(Command("book"))
+async def book_command(message: types.Message):
+    b = random.randint(1, 100)
+    await message.answer(f"Случайная книга: {Books[b]}")
 
 # На команду помошь даем доступные на этот момент команды
 @dp.message(Command("help"))
@@ -72,7 +91,9 @@ async def help_command(message: types.Message):
         "/start - начать работу с ботом\n"
         "/help - Показывает список команд\n"
         "/random - Генерирует рандомное число\n"
-        "/weather - Показывает погоду в Алматы на данный момент"
+        "/weather - Показывает погоду в Алматы на данный момент\n"
+        "/film - Дает рандомный фильм\n"
+        "/book - Дает рандомную книгу"
     )
     await message.answer(command_text)  # Отправляем пользователю командный список
 
@@ -82,11 +103,27 @@ async def weather_command(message: types.Message):
     weather_info = await get_weather()  # Получаем информацию о погоде
     await message.answer(weather_info)  # Отправляем информацию о погоде
 
+@dp.message(lambda message: message.text == "Начать")
+async def start_button(message: types.Message):
+    await start(message)
+
+@dp.message(lambda message: message.text == "Помощь")
+async def help_button(message: types.Message):
+    await help_command(message)
+
+@dp.message(lambda message: message.text == "Рандомное число")
+async def random_button(message: types.Message):
+    await random_command(message)
+
+@dp.message(lambda message: message.text == "Погода")
+async def weather_button(message: types.Message):
+    await weather_command(message)
+
+
 
 # Запускает бота
 async def main():
     await dp.start_polling(bot)
-    print("Бот запущен")
 
 # Для выполнение всех команд одноврененно и всегда(наверное)
 if __name__ == "__main__":

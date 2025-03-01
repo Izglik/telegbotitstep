@@ -1,8 +1,12 @@
 import aiohttp
 from api import API_KEY, WEATHER_URL
 
+CITIES = {
+    "Казахстан":["Алматы", "Астана"],
+    "Россия":["Москва"]
+}
 
-async def get_weather():
+async def get_weather(city: str = "Алматы"):
     params = { 
         "q": "Алматы",  
         "appid": API_KEY,
@@ -20,3 +24,6 @@ async def get_weather():
                 )
             else:
                 return "Ошибка. Не удалось получить погоду для Алматы."
+
+def get_available_cities():
+    return CITIES
